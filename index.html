@@ -790,6 +790,9 @@
 
         agregar.addEventListener('click', function(){        
             resetearFormulario();
+
+
+
             document.getElementById('formABM').hidden = false;
         });
 
@@ -930,8 +933,6 @@
                     tr.appendChild(crearCeldaEnBlanco('materia'));
                     tr.appendChild(crearCeldaEnBlanco('anio'));
                 } 
-
-
             }   
 
             if(element.hasOwnProperty('id')){
@@ -988,11 +989,11 @@
     <section class="container">
         <form id = "formABM">            
             <label>
-                ID: <input type="number" id="txtID" name="id">
+                ID: <input type="number" id="txtID" name="id" disabled = "true">
             </label>
             <br><br>
             <label>
-                DNI: <input type="number" id="txtDNI" name="dni">
+                DNI: <input type="number" id="txtDNI" name="dni" max="99999999">
             </label>
             <br><br>
             <label>
@@ -1015,7 +1016,7 @@
                 </label>
                 <br><br>
                 <label>
-                    Curso Letra: <input type="text" id="txtCursoLetra" name="sexo" required>
+                    Curso Letra: <input type="text" id="txtCursoLetra" name="cursoLetra" required>
                 </label>
                 <br><br>
             </fieldset>
