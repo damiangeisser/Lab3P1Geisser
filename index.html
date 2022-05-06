@@ -10,7 +10,7 @@
     .container{
         display: flex;
         justify-content: center;
-        background-color: #cccccc;
+        background-color:#cfb189;
     }
 
     .fieldsetABM{
@@ -20,23 +20,28 @@
     }
 
     #controlesTabla{
-        /* width: 50%; */
         justify-content: center;
-        background-color: #c58d43;
+        padding: 10px;
+        width: 55%;
+        min-width: 300px;
+        min-height: 100px;
+        background-color:#cfb189;
     }
 
     body{
         border-collapse: collapse;
-        background-color: #cccccc;
+        background-color:  #cfb189;
+        font-family: Arial, Helvetica, sans-serif;
     }
 
     table{
         border-collapse: collapse;
-        background-color: #cccccc;
+        background-color:#cfb189;
+        min-width: 800px;
     }
 
     table, th, td{
-        border: 1px solid black;
+        border: 1px solid #4d2f08;
         padding: 5px;
     }
 
@@ -45,12 +50,13 @@
         padding: 15px;
         position: fixed;
         top: 10%;
-        left: 35%;
+        left: auto;
         width: 25%;
         min-width: 300px;
-        height: 40%;
-        min-height: 250px;
-        background-color:  #c58d43; /* Fallback color */
+        height: 45%;
+        min-height: 300px;
+        background-color:  #d39f5c;
+        box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     }
 </style>
 
@@ -876,8 +882,8 @@
 
         boton.setAttribute('class', 'botonCabecera');
 
-        boton.textContent = texto;
-
+        boton.textContent = texto != 'Anio' ? texto : 'Año'; 
+ 
         th.appendChild(boton);
 
         return th;
@@ -982,9 +988,7 @@
         }
     }
 </script>
-
 </head>
-
 <body>
     <section class="container">
         <form id = "formABM">            
@@ -1026,7 +1030,7 @@
                 </label>
                 <br><br>
                 <label>
-                    A&ntilde;o: <input type="number" id="txtAnio" name="anio">
+                    A&ntilde;o: <input type="number" id="txtAnio" name="anio" min="2022" max="2070">
                 </label>
                 <br><br>
             </fieldset>
@@ -1039,20 +1043,19 @@
     </section>
     <section class="container">       
         <form id = "controlesTabla">
-            <p>Form Datos</p>
-
+            <h1>Form Datos</h1>
             <label for="filtroPersonas">Filtrar por: </label>
             <select name = "filtroPersonas" id = "filtroPersonas">
                <option value = "ninguno" selected>Ninguno</option>
                <option value = "alumnos">Alumnos</option>
                <option value = "docentes">Docentes</option>
-            </select><br>
-
+            </select>
+            <br><br>
             <label for="promedioIds">Valor Promedio IDs:</label>
             <input type="text" id="promedioIds" name="promedioIds"> 
 
             <input type="button" value="Calcular" id="calcularPromedio"><br>
-
+            <br><br>
             <input type="checkbox" id="filtroId" name="filtroId" value="filtroId" checked ="true">
             <label for="filtroId">ID</label>
 
