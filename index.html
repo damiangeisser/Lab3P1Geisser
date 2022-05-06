@@ -84,19 +84,21 @@
 
 
     window.addEventListener("load", function (){
-        JsonAObjetos('[{"id":"518", "apellido":"Serrano", "nombre":"Horacio", "edad":"38", "sexo":"M"},{"id":"38","apellido":"Perez", "nombre":"Gabriel", "cuil":"20708945951","sueldo":"58318,30"},{"id":"9812", "apellido":"Martinez", "nombre":"Lorena", "edad":"25","sexo":"F"},{"id":"600", "apellido":"Paez", "nombre":"Micaela", "cuil":"20536275961","sueldo":"75318,30"}, {"id":"785", "apellido":"Manuel", "nombre":"Loza", "edad":"39","sexo":"M"},{"id":"862", "apellido":"Casa", "nombre":"Julian", "cuil":"20428684151","sueldo":"60318,30"}]');
-
+        JsonAObjetos('[{"id":1,"dni":17663295,"nombre":"FABIAN MARCELO","apellido":"ABADIE","cursoNumero":1,"cursoLetra":"F"},{"id":2,"dni":38724762,"nombre":"MAIRA DAIANA","apellido":"ABALOS","cursoNumero":3,"cursoLetra":"M"},{"id":3,"dni":25447357,"nombre":"NOELIA LIDIA","apellido":"ABBA","cursoNumero":2,"cursoLetra":"N"},{"id":4,"dni":27577699,"nombre":"MARÍA SOLEDAD","apellido":"ACHOR","cursoNumero":2,"cursoLetra":"M"},{"id":900,"dni":11496581,"nombre":"JOSE MIGUEL","apellido":"ARMALEO","materia":"Fisica","año":1},{"id":899,"dni":35326658,"nombre":"ROSA DEL VALLE","apellido":"LOPEZ","materia":"Lengua","año":3},{"id":898,"dni":39638351,"nombre":"DANIELA BELEN","apellido":"BROGGI D`ATENA","materia":"Matematica","año":3},{"id":897,"dni":17275566,"nombre":"PABLO ALBERTO","apellido":"ALMEIDA","materia":"Quimica","año":1}]');
+        
         inicializarManejadores();
     });
 
     class Persona {
 
         id = 0;
+        dni = 0;
         apellido = "";
         nombre = "";
 
-        constructor(id, apellido, nombre) {
+        constructor(id, dni, apellido, nombre) {
             this.id = id;
+            this.dni = dni;
             this.apellido = apellido;
             this.nombre = nombre;
         }
@@ -107,46 +109,48 @@
         }
     }
           
-    class Empleado extends Persona {
+    class Alumno extends Persona {
 
-        cuil = 0;
-        sueldo = 0;
-
-        constructor(id, apellido, nombre, cuil, sueldo) {
+        cursoNumero = 0;
+        cursoLetra = "";
         
-            super(id, apellido, nombre);
+        constructor(id, dni, apellido, nombre, cursoNumero, cursoLetra) {
         
-            this.cuil = cuil;
-            this.sueldo = sueldo;
+            super(id, dni, apellido, nombre);
+         
+            this.cursoNumero = cursoNumero;
+            this.cursoLetra = cursoLetra;
         }
 
-        static ToString(empleado)
+        static ToString(alumno)
         {
-            return super.ToString(empleado);
+            return super.ToString(alumno);
         }
     }
 
-    class Cliente extends Persona {
+    class Docente extends Persona {
 
-        edad = 0;
-        sexo = "";
+        materia = "";
+        anio = 0;
 
-        constructor(id, apellido, nombre, edad, sexo) {
+        constructor(id, dni, apellido, nombre, materia, anio) {
         
-            super(id, apellido, nombre);
+            super(id, dni, apellido, nombre);
         
-            this.edad = edad;
-            this.sexo = sexo;
+            this.materia = materia;
+            this.anio = anio;
         }
 
-        static ToString(cliente)
+        static ToString(docente)
         {
-            return super.ToString(cliente);
+            return super.ToString(docente);
         }
     }
 
     function JsonAObjetos(arrayJson)
     {
+        arrayJson = arrayJson.replace(/ñ/g,'ni');
+
         var objetosJson = JSON.parse(arrayJson);
     
         objetosJson.forEach(generarPersonas);
@@ -158,14 +162,14 @@
     {
         if(objeto != undefined)
         {
-            if (objeto.hasOwnProperty('cuil')) {
-                var empleado = new Empleado(objeto.id, objeto.apellido, objeto.nombre, objeto.cuil, objeto.sueldo.replace(',', '.'));
+            if (objeto.hasOwnProperty('cursoLetra')) {
+                var alumno = new Alumno(objeto.id, objeto.dni, objeto.apellido, objeto.nombre,  objeto.cursoNumero, objeto.cursoLetra);
             
-                listaPersonas.push(empleado);
+                listaPersonas.push(alumno);
             }else{
-                var cliente = new Cliente(objeto.id, objeto.apellido, objeto.nombre, objeto.edad, objeto.sexo);
+                var docente = new Docente(objeto.id, objeto.dni, objeto.apellido, objeto.nombre, objeto.materia, objeto.anio);
 
-                listaPersonas.push(cliente);
+                listaPersonas.push(docente);
             }
         }
 
@@ -189,7 +193,7 @@
 
         promediarIds = document.getElementById('calcularPromedio');
 
-        document.getElementById('camposEmpleado').hidden = true;
+        document.getElementById('camposDocente').hidden = true;
         document.getElementById('formABM').hidden = true;
         
         actualizarLista(); 
@@ -244,19 +248,21 @@
                 tipoPersonasABM = document.getElementById('tipoABMPersonas');
 
                 switch (tipoPersonasABM.value) {
-                    case 'clientes':
-                        listaPersonas[index] = new Cliente(frmPersona.id.value,
+                    case 'alumnos':
+                        listaPersonas[index] = new Alumno(frmPersona.id.value,
+                                            frmPersona.dni.value,
                                             frmPersona.apellido.value,
                                             frmPersona.nombre.value,
-                                            frmPersona.edad.value,
-                                            frmPersona.sexo.value); 
+                                            frmPersona.cursoNumero.value,
+                                            frmPersona.cursoLetra.value); 
                         break;
-                    case 'empleados':
-                        listaPersonas[index] = new Empleado(frmPersona.id.value,
+                    case 'docentes':
+                        listaPersonas[index] = new Docente(frmPersona.id.value,
+                                            frmPersona.dni.value,
                                             frmPersona.apellido.value,
                                             frmPersona.nombre.value,
-                                            frmPersona.cuil.value,
-                                            frmPersona.sueldo.value); 
+                                            frmPersona.materia.value,
+                                            frmPersona.anio.value); 
                         break;
                 
                     default:
@@ -289,8 +295,6 @@
                 return parseInt(persona.id, 10);
             });
             
-console.log(listaIds.length);
-
             var cantidad = listaIds.length;
 
             var total = listaIds.reduce(function (previous, current) {
@@ -302,12 +306,13 @@ console.log(listaIds.length);
         });
 
         mostrarId = document.getElementById('filtroId');
+        mostrarDni = document.getElementById('filtroDni');
         mostrarApellido = document.getElementById('filtroApellido');
         mostrarNombre = document.getElementById('filtroNombre');
-        mostrarEdad = document.getElementById('filtroEdad');
-        mostrarSexo = document.getElementById('filtroSexo');
-        mostrarCuil = document.getElementById('filtroCuil');
-        mostrarSueldo = document.getElementById('filtroSueldo');
+        mostrarCursoLetra = document.getElementById('filtroCursoLetra');
+        mostrarCursoNumero = document.getElementById('filtroCursoNumero');
+        mostrarMateria = document.getElementById('filtroMateria');
+        mostrarAnio = document.getElementById('filtroAnio');
 
         mostrarId.addEventListener('change', function(){  
                   
@@ -322,6 +327,20 @@ console.log(listaIds.length);
                 visibilizarCeldas(celdas, false);
             }
         });
+
+        mostrarDni.addEventListener('change', function(){  
+                  
+                  celdas = document.getElementsByClassName('tddni');
+      
+                  if(mostrarDni.checked)
+                  {      
+                      visibilizarCeldas(celdas, true);
+                  }
+                  else{
+      
+                      visibilizarCeldas(celdas, false);
+                  }
+              });
 
         mostrarApellido.addEventListener('change', function(){  
                   
@@ -351,11 +370,11 @@ console.log(listaIds.length);
             }
         });
 
-        mostrarEdad.addEventListener('change', function(){  
+        mostrarCursoLetra.addEventListener('change', function(){  
                   
-            celdas = document.getElementsByClassName('tdedad');
+            celdas = document.getElementsByClassName('tdcursoletra');
 
-            if(mostrarEdad.checked)
+            if(mostrarCursoLetra.checked)
             {      
                 visibilizarCeldas(celdas, true);
             }
@@ -365,11 +384,11 @@ console.log(listaIds.length);
             }
         });
 
-        mostrarSexo.addEventListener('change', function(){  
+        mostrarCursoNumero.addEventListener('change', function(){  
                   
-            celdas = document.getElementsByClassName('tdsexo');
+            celdas = document.getElementsByClassName('tdcursonumero');
 
-            if(mostrarSexo.checked)
+            if(mostrarCursoNumero.checked)
             {      
                 visibilizarCeldas(celdas, true);
             }
@@ -379,11 +398,11 @@ console.log(listaIds.length);
             }
         });
 
-        mostrarCuil.addEventListener('change', function(){  
+        mostrarMateria.addEventListener('change', function(){  
                   
-            celdas = document.getElementsByClassName('tdcuil');
+            celdas = document.getElementsByClassName('tdmateria');
 
-            if(mostrarCuil.checked)
+            if(mostrarMateria.checked)
             {      
                 visibilizarCeldas(celdas, true);
             }
@@ -393,11 +412,11 @@ console.log(listaIds.length);
             }
         });
 
-        mostrarSueldo.addEventListener('change', function(){  
+        mostrarAnio.addEventListener('change', function(){  
                   
-            celdas = document.getElementsByClassName('tdsueldo');
+            celdas = document.getElementsByClassName('tdanio');
 
-            if(mostrarSueldo.checked)
+            if(mostrarAnio.checked)
             {      
                 visibilizarCeldas(celdas, true);
             }
@@ -416,6 +435,17 @@ console.log(listaIds.length);
             celdas = document.getElementsByClassName('tdid');
 
             if(document.getElementById('filtroId').checked)
+            {      
+                visibilizarCeldas(celdas, true);
+            }
+            else{
+
+                visibilizarCeldas(celdas, false);
+            }
+
+            celdas = document.getElementsByClassName('tddni');
+
+            if(document.getElementById('filtroDni').checked)
             {      
                 visibilizarCeldas(celdas, true);
             }
@@ -446,9 +476,9 @@ console.log(listaIds.length);
                 visibilizarCeldas(celdas, false);
             }
 
-            celdas = document.getElementsByClassName('tdedad');
+            celdas = document.getElementsByClassName('tdcursoletra');
 
-            if(document.getElementById('filtroEdad').checked)
+            if(document.getElementById('filtroCursoLetra').checked)
             {      
                 visibilizarCeldas(celdas, true);
             }
@@ -457,9 +487,9 @@ console.log(listaIds.length);
                 visibilizarCeldas(celdas, false);
             }
 
-            celdas = document.getElementsByClassName('tdsexo');
+            celdas = document.getElementsByClassName('tdcursonumero');
 
-            if(document.getElementById('filtroSexo').checked)
+            if(document.getElementById('filtroCursoNumero').checked)
             {      
                 visibilizarCeldas(celdas, true);
             }
@@ -468,9 +498,9 @@ console.log(listaIds.length);
                 visibilizarCeldas(celdas, false);
             }
 
-            celdas = document.getElementsByClassName('tdcuil');
+            celdas = document.getElementsByClassName('tdmateria');
 
-            if(document.getElementById('filtroCuil').checked)
+            if(document.getElementById('filtroMateria').checked)
             {      
                 visibilizarCeldas(celdas, true);
             }
@@ -479,9 +509,9 @@ console.log(listaIds.length);
                 visibilizarCeldas(celdas, false);
             }
 
-            celdas = document.getElementsByClassName('tdsueldo');
+            celdas = document.getElementsByClassName('tdanio');
 
-            if(document.getElementById('filtroSueldo').checked)
+            if(document.getElementById('filtroAnio').checked)
             {      
                 visibilizarCeldas(celdas, true);
             }
@@ -511,28 +541,28 @@ console.log(listaIds.length);
         
         filtroPersonasABM = document.getElementById('tipoABMPersonas');
 
-        if(filtroPersonasABM.value == 'clientes'){
+        if(filtroPersonasABM.value == 'alumnos'){
 
-            document.getElementById('camposEmpleado').hidden = true;
+            document.getElementById('camposDocente').hidden = true;
 
-            document.getElementById('txtCuil').removeAttribute('required');
-            document.getElementById('txtSueldo').removeAttribute('required');
+            document.getElementById('txtMateria').removeAttribute('required');
+            document.getElementById('txtAnio').removeAttribute('required');
 
-            document.getElementById('camposCliente').hidden = false;
+            document.getElementById('camposAlumno').hidden = false;
 
-            document.getElementById('txtEdad').setAttribute('required','');
-            document.getElementById('txtSexo').setAttribute('required','');
+            document.getElementById('txtCursoLetra').setAttribute('required','');
+            document.getElementById('txtCursoNumero').setAttribute('required','');
         }
         else{
-            document.getElementById('camposEmpleado').hidden = false;
+            document.getElementById('camposDocente').hidden = false;
             
-            document.getElementById('txtCuil').setAttribute('required','');
-            document.getElementById('txtSueldo').setAttribute('required','');
+            document.getElementById('txtMateria').setAttribute('required','');
+            document.getElementById('txtAnio').setAttribute('required','');
             
-            document.getElementById('camposCliente').hidden = true;
+            document.getElementById('camposAlumno').hidden = true;
             
-            document.getElementById('txtEdad').removeAttribute('required');
-            document.getElementById('txtSexo').removeAttribute('required');
+            document.getElementById('txtCursoLetra').removeAttribute('required');
+            document.getElementById('txtCursoNumero').removeAttribute('required');
         }
 
     }
@@ -544,7 +574,7 @@ console.log(listaIds.length);
 
     function obtenerId() {  
 
-        return JSON.parse(sessionStorage.getItem('nextId')) || 100;
+        return JSON.parse(sessionStorage.getItem('nextId'));
     }   
 
     function generarId(listaPersonas) {  
@@ -566,23 +596,25 @@ console.log(listaIds.length);
         tipoPersonasABM = document.getElementById('tipoABMPersonas');
 
         switch (tipoPersonasABM.value) {
-            case 'clientes':
-                const nuevoCliente = new Cliente(proximoId,
+            case 'alumnos':
+                const nuevoAlumno = new Alumno(frmPersona.id.value,
+                                    frmPersona.dni.value,
                                     frmPersona.apellido.value,
                                     frmPersona.nombre.value,
-                                    frmPersona.edad.value,
-                                    frmPersona.sexo.value); 
+                                    frmPersona.cursoNumero.value,
+                                    frmPersona.cursoLetra.value);  
                 
-                return nuevoCliente;
+                return nuevoAlumno;
                 break;
-            case 'empleados':
-                const nuevoEmpleado = new Empleado(proximoId,
+            case 'docentes':
+                const nuevoDocente = new Docente(frmPersona.id.value,
+                                    frmPersona.dni.value,
                                     frmPersona.apellido.value,
                                     frmPersona.nombre.value,
-                                    frmPersona.cuil.value,
-                                    frmPersona.sueldo.value); 
+                                    frmPersona.materia.value,
+                                    frmPersona.anio.value);  
                 
-                return nuevoEmpleado;
+                return nuevoDocente;
                 break;
 
             default:
@@ -600,16 +632,24 @@ console.log(listaIds.length);
         divTabla.appendChild(crearTabla(listaPersonas, filtro));
 
         ordenarId = document.getElementById('btnID');
+        ordenarDni = document.getElementById('btnDNI');
         ordenarApellido = document.getElementById('btnApellido');
         ordenarNombre = document.getElementById('btnNombre');
-        ordenarEdad = document.getElementById('btnEdad');
-        ordenarSexo = document.getElementById('btnSexo');
-        ordenarCuil = document.getElementById('btnCUIL');
-        ordenarSueldo = document.getElementById('btnSueldo');
+        ordenarCursoNumero = document.getElementById('btnCursoNumero');
+        ordenarCursoLetra = document.getElementById('btnCursoLetra');
+        ordenarMateria = document.getElementById('btnMateria');
+        ordenarAnio = document.getElementById('btnAnio');
 
         ordenarId.addEventListener('click', function(){
 
             listaPersonas = listaPersonas.sort((a,b) => a.id - b.id);
+            
+            actualizarLista();
+        });
+
+        ordenarDni.addEventListener('click', function(){
+
+            listaPersonas = listaPersonas.sort((a,b) => a.dni - b.dni);
             
             actualizarLista();
         });
@@ -650,98 +690,98 @@ console.log(listaIds.length);
             actualizarLista();
         });
 
-        ordenarEdad.addEventListener('click', function(){
+        ordenarCursoNumero.addEventListener('click', function(){
        
-            let listaClientes = listaPersonas.filter(esCliente);
+            let listaAlumnos = listaPersonas.filter(esAlumno);
 
-            let listaEmpleados = listaPersonas.filter(esEmpleado);
+            let listaDocentes = listaPersonas.filter(esDocente);
 
-            listaClientes = listaClientes.sort((a, b) => {
-                                let edadA = a.edad,
-                                    edadB = b.edad;
+            listaAlumnos = listaAlumnos.sort((a, b) => {
+                                let cursoNumeroA = a.cursoNumero,
+                                    cursoNumeroB = b.cursoNumero;
 
-                                if (edadA < edadB) {
+                                if (cursoNumeroA < cursoNumeroB) {
                                     return -1;
                                 }
-                                if (edadA > edadB) {
+                                if (cursoNumeroA > cursoNumeroB) {
                                     return 1;
                                 }
                                 return 0;
                             });
             
-            listaPersonas = listaClientes.concat(listaEmpleados);
+            listaPersonas = listaAlumnos.concat(listaDocentes);
 
             actualizarLista();
         });
 
-        ordenarSexo.addEventListener('click', function(){
+        ordenarCursoLetra.addEventListener('click', function(){
 
-            let listaClientes = listaPersonas.filter(esCliente);
+            let listaAlumnos = listaPersonas.filter(esAlumno);
 
-            let listaEmpleados = listaPersonas.filter(esEmpleado);
+            let listaDocentes = listaPersonas.filter(esDocente);
 
-            listaClientes = listaClientes.sort((a, b) => {
-                                let sexoA = a.sexo,
-                                    sexoB = b.sexo;
+            listaAlumnos = listaAlumnos.sort((a, b) => {
+                                let cursoLetraA = a.cursoLetra,
+                                    cursoLetraB = b.cursoLetra;
 
-                                if (sexoA < sexoB) {
+                                if (cursoLetraA < cursoLetraB) {
                                     return -1;
                                 }
-                                if (sexoA > sexoB) {
+                                if (cursoLetraA > cursoLetraB) {
+                                    return 1;
+                                }
+                                return 0;
+                            });
+            
+            listaPersonas = listaAlumnos.concat(listaDocentes);
+
+            actualizarLista();
+        });
+
+        ordenarMateria.addEventListener('click', function(){
+
+            let listaAlumnos = listaPersonas.filter(esAlumno);
+
+            let listaDocentes = listaPersonas.filter(esDocente);
+
+            listaDocentes = listaDocentes.sort((a, b) => {
+                                let materiaA = a.materia,
+                                    materiaB = b.materia;
+
+                                if (materiaA < materiaB) {
+                                    return -1;
+                                }
+                                if (materiaA > materiaB) {
                                     return 1;
                                 }
                                 return 0;
                             });
 
-            listaPersonas = listaClientes.concat(listaEmpleados);
+            listaPersonas = listaDocentes.concat(listaAlumnos);
 
             actualizarLista();
         });
 
-        ordenarCuil.addEventListener('click', function(){
+        ordenarAnio.addEventListener('click', function(){
 
-            let listaClientes = listaPersonas.filter(esCliente);
+            let listaAlumnos = listaPersonas.filter(esAlumno);
 
-            let listaEmpleados = listaPersonas.filter(esEmpleado);
+            let listaDocentes = listaPersonas.filter(esDocente);
 
-            listaEmpleados = listaEmpleados.sort((a, b) => {
-                                let cuilA = a.cuil,
-                                    cuilB = b.cuil;
+            listaDocentes = listaDocentes.sort((a, b) => {
+                                let anioA = a.anio,
+                                    anioB = b.anio;
 
-                                if (cuilA < cuilB) {
+                                if (anioA < anioB) {
                                     return -1;
                                 }
-                                if (cuilA > cuilB) {
+                                if (anioA > anioB) {
                                     return 1;
                                 }
                                 return 0;
                             });
 
-            listaPersonas = listaEmpleados.concat(listaClientes);
-
-            actualizarLista();
-        });
-
-        ordenarSueldo.addEventListener('click', function(){
-
-            let listaClientes = listaPersonas.filter(esCliente);
-
-            let listaEmpleados = listaPersonas.filter(esEmpleado);
-
-            listaEmpleados = listaEmpleados.sort((a, b) => {
-                                let sueldoA = a.sueldo,
-                                    sueldoB = b.sueldo;
-
-                                if (sueldoA < sueldoB) {
-                                    return -1;
-                                }
-                                if (sueldoA > sueldoB) {
-                                    return 1;
-                                }
-                                return 0;
-                            });
-
-            listaPersonas = listaEmpleados.concat(listaClientes);
+            listaPersonas = listaDocentes.concat(listaAlumnos);
 
             actualizarLista();
         });
@@ -770,21 +810,22 @@ console.log(listaIds.length);
             const personaSeleccionada = encontrarPersona(encontrarIndexPersona(id));    
 
             frmPersona.id.value = personaSeleccionada.id;
+            frmPersona.dni.value = personaSeleccionada.dni;
             frmPersona.apellido.value = personaSeleccionada.apellido;
             frmPersona.nombre.value = personaSeleccionada.nombre;
 
-            if (personaSeleccionada.hasOwnProperty('edad')) {
+            if (personaSeleccionada.hasOwnProperty('cursoNumero')) {
 
-                document.getElementById('tipoABMPersonas').value = 'clientes';
+                document.getElementById('tipoABMPersonas').value = 'alumnos';
                 ajustarFormulario();
-                frmPersona.edad.value = personaSeleccionada.edad;
-                frmPersona.sexo.value = personaSeleccionada.sexo;
+                frmPersona.cursoNumero.value = personaSeleccionada.cursoNumero;
+                frmPersona.cursoLetra.value = personaSeleccionada.cursoLetra;
             }
             else{
-                document.getElementById('tipoABMPersonas').value = 'empleados';
+                document.getElementById('tipoABMPersonas').value = 'docentes';
                 ajustarFormulario();
-                frmPersona.cuil.value = personaSeleccionada.cuil;
-                frmPersona.sueldo.value = personaSeleccionada.sueldo; 
+                frmPersona.materia.value = personaSeleccionada.materia;
+                frmPersona.anio.value = personaSeleccionada.anio; 
             }
         }
     }   
@@ -806,7 +847,7 @@ console.log(listaIds.length);
 
         const thead = document.createElement('thead');
         const tr = document.createElement('tr');
-        const columnas = ['ID', 'Apellido', 'Nombre', 'Edad', 'Sexo', 'CUIL', 'Sueldo'];
+        const columnas = ['ID', 'DNI', 'Apellido', 'Nombre', 'CursoNumero', 'CursoLetra', 'Materia', 'Anio'];
 
         columnas.forEach(element => {  
             tr.appendChild(crearBotonesCabecera(element));   
@@ -839,23 +880,23 @@ console.log(listaIds.length);
         return th;
     }
 
-    function esCliente(persona) {
-        return persona.edad != undefined;
+    function esAlumno(persona) {
+        return persona.cursoNumero != undefined;
     }
 
-    function esEmpleado(persona) {
-        return persona.cuil != undefined;
+    function esDocente(persona) {
+        return persona.materia != undefined;
     }
 
     function crearCuerpo(lista, filtro = undefined) {   
 
         switch (filtro) {
-            case 'clientes':
-                lista = lista.filter(esCliente);
+            case 'alumnos':
+                lista = lista.filter(esAlumno);
                 break;
 
-            case 'empleados':
-                lista = lista.filter(esEmpleado);
+            case 'docentes':
+                lista = lista.filter(esDocente);
                 break;
         
             default:
@@ -872,23 +913,25 @@ console.log(listaIds.length);
 
                 var classTd = 'td';
 
-                if(key == 'cuil'){
-                    tr.appendChild(crearCeldaEnBlanco('sexo'));
-                    tr.appendChild(crearCeldaEnBlanco('edad'));
-                }   
+                if(key == 'materia'){
+                    tr.appendChild(crearCeldaEnBlanco('cursoNumero'));
+                    tr.appendChild(crearCeldaEnBlanco('cursoLetra'));
+                }
 
                 if (element.hasOwnProperty(key)) {
                     const td = document.createElement('td');
                     const texto = document.createTextNode(element[key]);
                     td.appendChild(texto);
-                    td.className = classTd.concat('', key);
+                    td.className = classTd.concat('', key.toLowerCase());
                     tr.appendChild(td);
-                }   
-
-                if(key == 'sexo'){
-                    tr.appendChild(crearCeldaEnBlanco('cuil'));
-                    tr.appendChild(crearCeldaEnBlanco('sueldo'));
                 }
+
+                if(key == 'cursoLetra'){
+                    tr.appendChild(crearCeldaEnBlanco('materia'));
+                    tr.appendChild(crearCeldaEnBlanco('anio'));
+                } 
+
+
             }   
 
             if(element.hasOwnProperty('id')){
@@ -902,7 +945,7 @@ console.log(listaIds.length);
         const trBoton = document.createElement('tr');
         const tdBoton = document.createElement('td');
         
-        tdBoton.colSpan = 7;
+        tdBoton.colSpan = 8;
         tdBoton.style.textAlign = 'center';
 
         const botonAgregar = document.createElement('button');
@@ -923,7 +966,7 @@ console.log(listaIds.length);
         const td = document.createElement('td');
         const texto = document.createTextNode('N/A');
         td.appendChild(texto);
-        td.className = classTd.concat('', key);
+        td.className = classTd.concat('', key.toLowerCase());
 
         return td;
     }   
@@ -949,6 +992,10 @@ console.log(listaIds.length);
             </label>
             <br><br>
             <label>
+                DNI: <input type="number" id="txtDNI" name="dni">
+            </label>
+            <br><br>
+            <label>
                 Apellido: <input type="text" id="txtApellido" name="apellido" required>
             </label>
             <br><br>
@@ -958,27 +1005,27 @@ console.log(listaIds.length);
             <br><br>
             <label for="tipoABMPersonas">Tipo: </label>
             <select name = "tipoABMPersonas" id = "tipoABMPersonas">
-                <option value = "clientes" selected>Clientes</option>
-                <option value = "empleados">Empleados</option>
+                <option value = "alumnos" selected>Alumnos</option>
+                <option value = "docentes">Docentes</option>
             </select>
             <br><br>
-            <fieldset id = "camposCliente" class="fieldsetABM">
+            <fieldset id = "camposAlumno" class="fieldsetABM">
                 <label>
-                    Edad: <input type="number" id="txtEdad" name="edad" min="1" max="150" required>
+                    Curso N&uacute;mero: <input type="number" id="txtCursoNumero" name="cursoNumero" min="1" required>
                 </label>
                 <br><br>
                 <label>
-                    Sexo: <input type="text" id="txtSexo" name="sexo" required>
+                    Curso Letra: <input type="text" id="txtCursoLetra" name="sexo" required>
                 </label>
                 <br><br>
             </fieldset>
-            <fieldset id = "camposEmpleado" class="fieldsetABM">
+            <fieldset id = "camposDocente" class="fieldsetABM">
                 <label>
-                    CUIL: <input type="text" id="txtCuil" name="cuil">
+                    Materia: <input type="text" id="txtMateria" name="materia">
                 </label>
                 <br><br>
                 <label>
-                    Sueldo: <input type="number" id="txtSueldo" name="sueldo" step=".01">
+                    A&ntilde;o: <input type="number" id="txtAnio" name="anio">
                 </label>
                 <br><br>
             </fieldset>
@@ -996,8 +1043,8 @@ console.log(listaIds.length);
             <label for="filtroPersonas">Filtrar por: </label>
             <select name = "filtroPersonas" id = "filtroPersonas">
                <option value = "ninguno" selected>Ninguno</option>
-               <option value = "clientes">Clientes</option>
-               <option value = "empleados">Empleados</option>
+               <option value = "alumnos">Alumnos</option>
+               <option value = "docentes">Docentes</option>
             </select><br>
 
             <label for="promedioIds">Valor Promedio IDs:</label>
@@ -1008,23 +1055,26 @@ console.log(listaIds.length);
             <input type="checkbox" id="filtroId" name="filtroId" value="filtroId" checked ="true">
             <label for="filtroId">ID</label>
 
+            <input type="checkbox" id="filtroDni" name="filtroDni" value="filtroDni" checked ="true">
+            <label for="filtroDni">DNI</label>
+
             <input type="checkbox" id="filtroApellido" name="filtroApellido" value="filtroApellido" checked ="true">
             <label for="filtroApellido">Apellido</label>
 
             <input type="checkbox" id="filtroNombre" name="filtroNombre" value="filtroNombre" checked ="true">
             <label for="filtroNombre">Nombre</label>
 
-            <input type="checkbox" id="filtroEdad" name="filtroEdad" value="filtroEdad" checked ="true">
-            <label for="filtroEdad">Edad</label>
+            <input type="checkbox" id="filtroCursoNumero" name="filtroCursoNumero" value="filtroCursoNumero" checked ="true">
+            <label for="filtroCursoNumero">Curso N&uacute;mero</label>
 
-            <input type="checkbox" id="filtroSexo" name="filtroSexo" value="filtroSexo" checked ="true">
-            <label for="filtroSexo">Sexo</label>
+            <input type="checkbox" id="filtroCursoLetra" name="filtroCursoLetra" value="filtroCursoLetra" checked ="true">
+            <label for="filtroCursoLetra">Curso Letra</label>
 
-            <input type="checkbox" id="filtroCuil" name="filtroCuil" value="filtroCuil" checked ="true">
-            <label for="filtroCuil">CUIL</label>
+            <input type="checkbox" id="filtroMateria" name="filtroMateria" value="filtroMateria" checked ="true">
+            <label for="filtroMateria">Materia</label>
 
-            <input type="checkbox" id="filtroSueldo" name="filtroSueldo" value="filtroSueldo" checked ="true">
-            <label for="filtroSueldo">Sueldo</label>
+            <input type="checkbox" id="filtroAnio" name="filtroAnio" value="filtroAnio" checked ="true">
+            <label for="filtroAnio">A&ntilde;o</label>
          </form>  
     </section>
     <section class="container">
