@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practica Parcial</title>
+
+<style>
+    .container{
+        display: flex;
+        justify-content: center;
+        background-color: #cccccc;
+    }
+
+    .fieldsetABM{
+        padding: 0;
+        margin: 0;
+        border-width: 0;
+    }
+
+    #controlesTabla{
+        /* width: 50%; */
+        justify-content: center;
+        background-color: #c58d43;
+    }
+
+    body{
+        border-collapse: collapse;
+        background-color: #cccccc;
+    }
+
+    table{
+        border-collapse: collapse;
+        background-color: #cccccc;
+    }
+
+    table, th, td{
+        border: 1px solid black;
+        padding: 5px;
+    }
+
+    #formABM {
+        z-index: 1;
+        padding: 15px;
+        position: fixed;
+        top: 10%;
+        left: 35%;
+        width: 25%;
+        min-width: 300px;
+        height: 40%;
+        min-height: 250px;
+        background-color:  #c58d43; /* Fallback color */
+    }
+</style>
+
+<script>
+    let listaPersonas = [];
+    let frmPersona;
+    let proximoId;
+    let divTabla;
+    let alta;
+    let baja;
+    let modificacion;
+    let cancelar;
+    let index;
+    let idSeleccionado;
+    let agregar;
+    let mostrarId;
+    let mostrarApellido;
+    let mostrarNombre;
+    let mostrarEdad;
+    let mostrarSexo;
+    let mostrarCuil;
+    let mostrarSueldo;
+    let ordenarId;
+    let ordenarApellido;
+    let ordenarNombre;
+    let ordenarEdad;
+    let ordenarSexo;
+    let ordenarCuil;
+    let ordenarSueldo;
+    let promediarIds;
+
+
+    window.addEventListener("load", function (){
+        JsonAObjetos('[{"id":"518", "apellido":"Serrano", "nombre":"Horacio", "edad":"38", "sexo":"M"},{"id":"38","apellido":"Perez", "nombre":"Gabriel", "cuil":"20708945951","sueldo":"58318,30"},{"id":"9812", "apellido":"Martinez", "nombre":"Lorena", "edad":"25","sexo":"F"},{"id":"600", "apellido":"Paez", "nombre":"Micaela", "cuil":"20536275961","sueldo":"75318,30"}, {"id":"785", "apellido":"Manuel", "nombre":"Loza", "edad":"39","sexo":"M"},{"id":"862", "apellido":"Casa", "nombre":"Julian", "cuil":"20428684151","sueldo":"60318,30"}]');
+
+        inicializarManejadores();
+    });
+
+    class Persona {
+
+        id = 0;
+        apellido = "";
+        nombre = "";
+
+        constructor(id, apellido, nombre) {
+            this.id = id;
+            this.apellido = apellido;
+            this.nombre = nombre;
+        }
+
+        static ToString(persona)
+        {
+            return JSON.stringify(persona);
+        }
+    }
+          
+    class Empleado extends Persona {
+
+        cuil = 0;
+        sueldo = 0;
+
+        constructor(id, apellido, nombre, cuil, sueldo) {
+        
+            super(id, apellido, nombre);
+        
+            this.cuil = cuil;
+            this.sueldo = sueldo;
+        }
+
+        static ToString(empleado)
+        {
+            return super.ToString(empleado);
+        }
+    }
+
+    class Cliente extends Persona {
+
+        edad = 0;
+        sexo = "";
+
+        constructor(id, apellido, nombre, edad, sexo) {
+        
+            super(id, apellido, nombre);
+        
+            this.edad = edad;
+            this.sexo = sexo;
+        }
+
+        static ToString(cliente)
+        {
+            return super.ToString(cliente);
+        }
+    }
+
+    function JsonAObjetos(arrayJson)
+    {
+        var objetosJson = JSON.parse(arrayJson);
+    
+        objetosJson.forEach(generarPersonas);
+
+        console.dir(listaPersonas);
+    }
+
+    function generarPersonas(objeto, index)
+    {
+        if(objeto != undefined)
+        {
+            if (objeto.hasOwnProperty('cuil')) {
+                var empleado = new Empleado(objeto.id, objeto.apellido, objeto.nombre, objeto.cuil, objeto.sueldo.replace(',', '.'));
+            
+                listaPersonas.push(empleado);
+            }else{
+                var cliente = new Cliente(objeto.id, objeto.apellido, objeto.nombre, objeto.edad, objeto.sexo);
+
+                listaPersonas.push(cliente);
+            }
+        }
+
+        sessionStorage.setItem('personas', JSON.stringify(listaPersonas));       
+    }   
+
+    function inicializarManejadores() { 
+
+        listaPersonas = obtenerPersonas();
+
+        divTabla = document.getElementById('divTabla'); 
+
+        alta = document.getElementById('alta');
+        baja = document.getElementById('baja');
+        modificacion = document.getElementById('modificacion');
+        cancelar = document.getElementById('cancelar');
+
+        filtroEntidad = document.getElementById('filtroPersonas');
+
+        filtroPersonasABM = document.getElementById('tipoABMPersonas');
+
+        promediarIds = document.getElementById('calcularPromedio');
+
+        document.getElementById('camposEmpleado').hidden = true;
+        document.getElementById('formABM').hidden = true;
+        
+        actualizarLista(); 
+
+        frmPersona = document.forms[0]; 
+
+        frmPersona.reset(); 
+
+        frmPersona.addEventListener('submit', e => {
+            e.preventDefault(); 
+
+            generarId(listaPersonas);
+
+            var frmId = document.getElementById('txtID');
+            frmId.value = sessionStorage.getItem('nextId');
+
+            const nuevaPersona = generarPersona();  
+
+            if (nuevaPersona) {
+                listaPersonas.push(nuevaPersona);
+                console.dir(nuevaPersona);
+                guardarDatos();
+                actualizarLista();
+                resetearFormulario();     
+            }
+
+            document.getElementById('formABM').hidden = true;
+        });
+
+        baja.addEventListener('click', function(){  
+
+            index = encontrarIndexPersona(idSeleccionado);  
+
+            if (index > -1) {   
+
+                listaPersonas.splice(index, 1); 
+
+                resetearFormulario();
+            }   
+
+            actualizarLista();
+
+            document.getElementById('formABM').hidden = true;
+        });
+
+        modificacion.addEventListener('click', function(){  
+
+            index = encontrarIndexPersona(idSeleccionado);  
+ 
+            if(index > -1){ 
+
+                tipoPersonasABM = document.getElementById('tipoABMPersonas');
+
+                switch (tipoPersonasABM.value) {
+                    case 'clientes':
+                        listaPersonas[index] = new Cliente(frmPersona.id.value,
+                                            frmPersona.apellido.value,
+                                            frmPersona.nombre.value,
+                                            frmPersona.edad.value,
+                                            frmPersona.sexo.value); 
+                        break;
+                    case 'empleados':
+                        listaPersonas[index] = new Empleado(frmPersona.id.value,
+                                            frmPersona.apellido.value,
+                                            frmPersona.nombre.value,
+                                            frmPersona.cuil.value,
+                                            frmPersona.sueldo.value); 
+                        break;
+                
+                    default:
+                        break;
+                }
+                
+                resetearFormulario();
+            }   
+
+            actualizarLista();
+            document.getElementById('formABM').hidden = true;
+        });
+
+        cancelar.addEventListener('click', function(){
+            
+            document.getElementById('formABM').hidden = true;
+            resetearFormulario();
+        });
+    
+        filtroPersonas.addEventListener('change', function(){  
+
+            filtro = filtroPersonas.value;
+
+            actualizarLista(filtro); 
+        });
+
+        promediarIds.addEventListener('click', function(){  
+
+            listaIds = listaPersonas.map(function (persona) {
+                return parseInt(persona.id, 10);
+            });
+            
+console.log(listaIds.length);
+
+            var cantidad = listaIds.length;
+
+            var total = listaIds.reduce(function (previous, current) {
+                return previous + current;
+            }, 0);
+
+            document.getElementById('promedioIds').value = total/cantidad;
+
+        });
+
+        mostrarId = document.getElementById('filtroId');
+        mostrarApellido = document.getElementById('filtroApellido');
+        mostrarNombre = document.getElementById('filtroNombre');
+        mostrarEdad = document.getElementById('filtroEdad');
+        mostrarSexo = document.getElementById('filtroSexo');
+        mostrarCuil = document.getElementById('filtroCuil');
+        mostrarSueldo = document.getElementById('filtroSueldo');
+
+        mostrarId.addEventListener('change', function(){  
+                  
+            celdas = document.getElementsByClassName('tdid');
+
+            if(mostrarId.checked)
+            {      
+                visibilizarCeldas(celdas, true);
+            }
+            else{
+
+                visibilizarCeldas(celdas, false);
+            }
+        });
+
+        mostrarApellido.addEventListener('change', function(){  
+                  
+            celdas = document.getElementsByClassName('tdapellido');
+
+            if(mostrarApellido.checked)
+            {      
+                visibilizarCeldas(celdas, true);
+            }
+            else{
+
+                visibilizarCeldas(celdas, false);
+            }
+        });
+
+        mostrarNombre.addEventListener('change', function(){  
+                  
+            celdas = document.getElementsByClassName('tdnombre');
+
+            if(mostrarNombre.checked)
+            {      
+                visibilizarCeldas(celdas, true);
+            }
+            else{
+
+                visibilizarCeldas(celdas, false);
+            }
+        });
+
+        mostrarEdad.addEventListener('change', function(){  
+                  
+            celdas = document.getElementsByClassName('tdedad');
+
+            if(mostrarEdad.checked)
+            {      
+                visibilizarCeldas(celdas, true);
+            }
+            else{
+
+                visibilizarCeldas(celdas, false);
+            }
+        });
+
+        mostrarSexo.addEventListener('change', function(){  
+                  
+            celdas = document.getElementsByClassName('tdsexo');
+
+            if(mostrarSexo.checked)
+            {      
+                visibilizarCeldas(celdas, true);
+            }
+            else{
+
+                visibilizarCeldas(celdas, false);
+            }
+        });
+
+        mostrarCuil.addEventListener('change', function(){  
+                  
+            celdas = document.getElementsByClassName('tdcuil');
+
+            if(mostrarCuil.checked)
+            {      
+                visibilizarCeldas(celdas, true);
+            }
+            else{
+
+                visibilizarCeldas(celdas, false);
+            }
+        });
+
+        mostrarSueldo.addEventListener('change', function(){  
+                  
+            celdas = document.getElementsByClassName('tdsueldo');
+
+            if(mostrarSueldo.checked)
+            {      
+                visibilizarCeldas(celdas, true);
+            }
+            else{
+
+                visibilizarCeldas(celdas, false);
+            }
+        });
+
+        filtroPersonasABM.addEventListener('change', function() {ajustarFormulario();});
+        
+    }
+
+    function validarCheckboxes()
+    {
+            celdas = document.getElementsByClassName('tdid');
+
+            if(document.getElementById('filtroId').checked)
+            {      
+                visibilizarCeldas(celdas, true);
+            }
+            else{
+
+                visibilizarCeldas(celdas, false);
+            }
+
+            celdas = document.getElementsByClassName('tdapellido');
+
+            if(document.getElementById('filtroApellido').checked)
+            {      
+                visibilizarCeldas(celdas, true);
+            }
+            else{
+
+                visibilizarCeldas(celdas, false);
+            }
+
+            celdas = document.getElementsByClassName('tdnombre');
+
+            if(document.getElementById('filtroNombre').checked)
+            {      
+                visibilizarCeldas(celdas, true);
+            }
+            else{
+
+                visibilizarCeldas(celdas, false);
+            }
+
+            celdas = document.getElementsByClassName('tdedad');
+
+            if(document.getElementById('filtroEdad').checked)
+            {      
+                visibilizarCeldas(celdas, true);
+            }
+            else{
+
+                visibilizarCeldas(celdas, false);
+            }
+
+            celdas = document.getElementsByClassName('tdsexo');
+
+            if(document.getElementById('filtroSexo').checked)
+            {      
+                visibilizarCeldas(celdas, true);
+            }
+            else{
+
+                visibilizarCeldas(celdas, false);
+            }
+
+            celdas = document.getElementsByClassName('tdcuil');
+
+            if(document.getElementById('filtroCuil').checked)
+            {      
+                visibilizarCeldas(celdas, true);
+            }
+            else{
+
+                visibilizarCeldas(celdas, false);
+            }
+
+            celdas = document.getElementsByClassName('tdsueldo');
+
+            if(document.getElementById('filtroSueldo').checked)
+            {      
+                visibilizarCeldas(celdas, true);
+            }
+            else{
+
+                visibilizarCeldas(celdas, false);
+            }
+    }
+
+    function visibilizarCeldas(celdas, visibles)
+    {
+        if(visibles)
+            {      
+                for (var i = 0; i < celdas.length; i++) {
+                    celdas[i].hidden = false;    
+                } 
+            }
+            else{
+
+                for (var i = 0; i < celdas.length; i++) {
+                    celdas[i].hidden = true;    
+                } 
+            }
+    }
+
+    function ajustarFormulario(){
+        
+        filtroPersonasABM = document.getElementById('tipoABMPersonas');
+
+        if(filtroPersonasABM.value == 'clientes'){
+
+            document.getElementById('camposEmpleado').hidden = true;
+
+            document.getElementById('txtCuil').removeAttribute('required');
+            document.getElementById('txtSueldo').removeAttribute('required');
+
+            document.getElementById('camposCliente').hidden = false;
+
+            document.getElementById('txtEdad').setAttribute('required','');
+            document.getElementById('txtSexo').setAttribute('required','');
+        }
+        else{
+            document.getElementById('camposEmpleado').hidden = false;
+            
+            document.getElementById('txtCuil').setAttribute('required','');
+            document.getElementById('txtSueldo').setAttribute('required','');
+            
+            document.getElementById('camposCliente').hidden = true;
+            
+            document.getElementById('txtEdad').removeAttribute('required');
+            document.getElementById('txtSexo').removeAttribute('required');
+        }
+
+    }
+
+    function obtenerPersonas() {    
+
+        return JSON.parse(sessionStorage.getItem('personas')) || [];
+    }   
+
+    function obtenerId() {  
+
+        return JSON.parse(sessionStorage.getItem('nextId')) || 100;
+    }   
+
+    function generarId(listaPersonas) {  
+
+        listaIds = listaPersonas.map(function (persona) {
+            return parseInt(persona.id, 10);
+        });
+
+        ultimoId = listaIds.sort((a,b)=>b-a)[0];
+
+        // Por algún motivo el operador ++ no funciona.
+        proximoId = ultimoId + 1;
+
+        sessionStorage.setItem('nextId', proximoId);
+    } 
+
+    function generarPersona() {
+
+        tipoPersonasABM = document.getElementById('tipoABMPersonas');
+
+        switch (tipoPersonasABM.value) {
+            case 'clientes':
+                const nuevoCliente = new Cliente(proximoId,
+                                    frmPersona.apellido.value,
+                                    frmPersona.nombre.value,
+                                    frmPersona.edad.value,
+                                    frmPersona.sexo.value); 
+                
+                return nuevoCliente;
+                break;
+            case 'empleados':
+                const nuevoEmpleado = new Empleado(proximoId,
+                                    frmPersona.apellido.value,
+                                    frmPersona.nombre.value,
+                                    frmPersona.cuil.value,
+                                    frmPersona.sueldo.value); 
+                
+                return nuevoEmpleado;
+                break;
+
+            default:
+                break;
+        }
+    }   
+
+    function guardarDatos() {   
+        sessionStorage.setItem('personas', JSON.stringify(listaPersonas));
+        sessionStorage.setItem('nextId', proximoId);
+    }   
+
+    function actualizarLista(filtro = undefined) {
+        divTabla.innerHTML = "";
+        divTabla.appendChild(crearTabla(listaPersonas, filtro));
+
+        ordenarId = document.getElementById('btnID');
+        ordenarApellido = document.getElementById('btnApellido');
+        ordenarNombre = document.getElementById('btnNombre');
+        ordenarEdad = document.getElementById('btnEdad');
+        ordenarSexo = document.getElementById('btnSexo');
+        ordenarCuil = document.getElementById('btnCUIL');
+        ordenarSueldo = document.getElementById('btnSueldo');
+
+        ordenarId.addEventListener('click', function(){
+
+            listaPersonas = listaPersonas.sort((a,b) => a.id - b.id);
+            
+            actualizarLista();
+        });
+
+        ordenarApellido.addEventListener('click', function(){
+            
+            listaPersonas = listaPersonas.sort((a, b) => {
+                                let apellidoA = a.apellido.toLowerCase(),
+                                    apellidoB = b.apellido.toLowerCase();
+
+                                if (apellidoA < apellidoB) {
+                                    return -1;
+                                }
+                                if (apellidoA > apellidoB) {
+                                    return 1;
+                                }
+                                return 0;
+                            });
+            
+            actualizarLista();
+        });
+
+        ordenarNombre.addEventListener('click', function(){
+
+            listaPersonas = listaPersonas.sort((a, b) => {
+                                let nombreA = a.nombre.toLowerCase(),
+                                    nombreB = b.nombre.toLowerCase();
+
+                                if (nombreA < nombreB) {
+                                    return -1;
+                                }
+                                if (nombreA > nombreB) {
+                                    return 1;
+                                }
+                                return 0;
+                            });
+            
+            actualizarLista();
+        });
+
+        ordenarEdad.addEventListener('click', function(){
+       
+            let listaClientes = listaPersonas.filter(esCliente);
+
+            let listaEmpleados = listaPersonas.filter(esEmpleado);
+
+            listaClientes = listaClientes.sort((a, b) => {
+                                let edadA = a.edad,
+                                    edadB = b.edad;
+
+                                if (edadA < edadB) {
+                                    return -1;
+                                }
+                                if (edadA > edadB) {
+                                    return 1;
+                                }
+                                return 0;
+                            });
+            
+            listaPersonas = listaClientes.concat(listaEmpleados);
+
+            actualizarLista();
+        });
+
+        ordenarSexo.addEventListener('click', function(){
+
+            let listaClientes = listaPersonas.filter(esCliente);
+
+            let listaEmpleados = listaPersonas.filter(esEmpleado);
+
+            listaClientes = listaClientes.sort((a, b) => {
+                                let sexoA = a.sexo,
+                                    sexoB = b.sexo;
+
+                                if (sexoA < sexoB) {
+                                    return -1;
+                                }
+                                if (sexoA > sexoB) {
+                                    return 1;
+                                }
+                                return 0;
+                            });
+
+            listaPersonas = listaClientes.concat(listaEmpleados);
+
+            actualizarLista();
+        });
+
+        ordenarCuil.addEventListener('click', function(){
+
+            let listaClientes = listaPersonas.filter(esCliente);
+
+            let listaEmpleados = listaPersonas.filter(esEmpleado);
+
+            listaEmpleados = listaEmpleados.sort((a, b) => {
+                                let cuilA = a.cuil,
+                                    cuilB = b.cuil;
+
+                                if (cuilA < cuilB) {
+                                    return -1;
+                                }
+                                if (cuilA > cuilB) {
+                                    return 1;
+                                }
+                                return 0;
+                            });
+
+            listaPersonas = listaEmpleados.concat(listaClientes);
+
+            actualizarLista();
+        });
+
+        ordenarSueldo.addEventListener('click', function(){
+
+            let listaClientes = listaPersonas.filter(esCliente);
+
+            let listaEmpleados = listaPersonas.filter(esEmpleado);
+
+            listaEmpleados = listaEmpleados.sort((a, b) => {
+                                let sueldoA = a.sueldo,
+                                    sueldoB = b.sueldo;
+
+                                if (sueldoA < sueldoB) {
+                                    return -1;
+                                }
+                                if (sueldoA > sueldoB) {
+                                    return 1;
+                                }
+                                return 0;
+                            });
+
+            listaPersonas = listaEmpleados.concat(listaClientes);
+
+            actualizarLista();
+        });
+
+        agregar = document.getElementById('botonAgregar');
+
+        agregar.addEventListener('click', function(){        
+            resetearFormulario();
+            document.getElementById('formABM').hidden = false;
+        });
+
+        validarCheckboxes();
+    }   
+
+    function encontrarIndexPersona(id) {
+        return listaPersonas.findIndex(persona => persona.id == id);
+    }   
+
+    function encontrarPersona(index) {
+        return listaPersonas[index];
+    }   
+
+    function cargarFormulario(id) {
+
+        if(id){
+            const personaSeleccionada = encontrarPersona(encontrarIndexPersona(id));    
+
+            frmPersona.id.value = personaSeleccionada.id;
+            frmPersona.apellido.value = personaSeleccionada.apellido;
+            frmPersona.nombre.value = personaSeleccionada.nombre;
+
+            if (personaSeleccionada.hasOwnProperty('edad')) {
+
+                document.getElementById('tipoABMPersonas').value = 'clientes';
+                ajustarFormulario();
+                frmPersona.edad.value = personaSeleccionada.edad;
+                frmPersona.sexo.value = personaSeleccionada.sexo;
+            }
+            else{
+                document.getElementById('tipoABMPersonas').value = 'empleados';
+                ajustarFormulario();
+                frmPersona.cuil.value = personaSeleccionada.cuil;
+                frmPersona.sueldo.value = personaSeleccionada.sueldo; 
+            }
+        }
+    }   
+
+    function resetearFormulario() {
+        frmPersona.reset(); 
+    }   
+
+    function crearTabla(lista, filtro = undefined) {
+        const tabla = document.createElement('table');  
+
+        tabla.appendChild(crearCabecera());
+        tabla.appendChild(crearCuerpo(lista, filtro)); 
+
+        return tabla;
+    }   
+
+    function crearCabecera() {
+
+        const thead = document.createElement('thead');
+        const tr = document.createElement('tr');
+        const columnas = ['ID', 'Apellido', 'Nombre', 'Edad', 'Sexo', 'CUIL', 'Sueldo'];
+
+        columnas.forEach(element => {  
+            tr.appendChild(crearBotonesCabecera(element));   
+        }); 
+
+        thead.appendChild(tr);  
+
+        return thead;
+    }
+
+    function crearBotonesCabecera(texto){
+
+        var idBoton = 'btn';
+        var idBoton = idBoton.concat('', texto);
+        var classTd = 'td';
+
+        const th = document.createElement('th');
+        th.className = classTd.concat('', texto.toLowerCase());
+
+        var boton = document.createElement('button');
+        
+        boton.setAttribute('id', idBoton);
+
+        boton.setAttribute('class', 'botonCabecera');
+
+        boton.textContent = texto;
+
+        th.appendChild(boton);
+
+        return th;
+    }
+
+    function esCliente(persona) {
+        return persona.edad != undefined;
+    }
+
+    function esEmpleado(persona) {
+        return persona.cuil != undefined;
+    }
+
+    function crearCuerpo(lista, filtro = undefined) {   
+
+        switch (filtro) {
+            case 'clientes':
+                lista = lista.filter(esCliente);
+                break;
+
+            case 'empleados':
+                lista = lista.filter(esEmpleado);
+                break;
+        
+            default:
+                break;
+        }
+
+        const tbody = document.createElement('tbody');  
+
+        lista.forEach(element => {  
+
+            const tr = document.createElement('tr');    
+
+            for (const key in element) {    
+
+                var classTd = 'td';
+
+                if(key == 'cuil'){
+                    tr.appendChild(crearCeldaEnBlanco('sexo'));
+                    tr.appendChild(crearCeldaEnBlanco('edad'));
+                }   
+
+                if (element.hasOwnProperty(key)) {
+                    const td = document.createElement('td');
+                    const texto = document.createTextNode(element[key]);
+                    td.appendChild(texto);
+                    td.className = classTd.concat('', key);
+                    tr.appendChild(td);
+                }   
+
+                if(key == 'sexo'){
+                    tr.appendChild(crearCeldaEnBlanco('cuil'));
+                    tr.appendChild(crearCeldaEnBlanco('sueldo'));
+                }
+            }   
+
+            if(element.hasOwnProperty('id')){
+                 tr.dataset.id = element['id'];
+            }
+        
+            agregarManejadorTr(tr);
+            tbody.appendChild(tr);
+        });
+
+        const trBoton = document.createElement('tr');
+        const tdBoton = document.createElement('td');
+        
+        tdBoton.colSpan = 7;
+        tdBoton.style.textAlign = 'center';
+
+        const botonAgregar = document.createElement('button');
+        botonAgregar.id ='botonAgregar';
+        botonAgregar.textContent = 'Agregar';
+
+        tdBoton.appendChild(botonAgregar);
+        trBoton.appendChild(tdBoton);
+
+        tbody.appendChild(trBoton);
+
+        return tbody;
+    }   
+
+    function crearCeldaEnBlanco(key)
+    {
+        var classTd = 'td';
+        const td = document.createElement('td');
+        const texto = document.createTextNode('N/A');
+        td.appendChild(texto);
+        td.className = classTd.concat('', key);
+
+        return td;
+    }   
+
+    function agregarManejadorTr(tr) {
+        if (tr) {
+            tr.addEventListener('dblclick', function (e) {
+                idSeleccionado = e.target.parentNode.dataset.id;
+                cargarFormulario(idSeleccionado);
+                document.getElementById('formABM').hidden = false;
+            });
+        }
+    }
+</script>
+
+</head>
+
+<body>
+    <section class="container">
+        <form id = "formABM">            
+            <label>
+                ID: <input type="number" id="txtID" name="id">
+            </label>
+            <br><br>
+            <label>
+                Apellido: <input type="text" id="txtApellido" name="apellido" required>
+            </label>
+            <br><br>
+            <label>
+                Nombre: <input type="text" id="txtNombre" name="nombre" required>
+            </label>
+            <br><br>
+            <label for="tipoABMPersonas">Tipo: </label>
+            <select name = "tipoABMPersonas" id = "tipoABMPersonas">
+                <option value = "clientes" selected>Clientes</option>
+                <option value = "empleados">Empleados</option>
+            </select>
+            <br><br>
+            <fieldset id = "camposCliente" class="fieldsetABM">
+                <label>
+                    Edad: <input type="number" id="txtEdad" name="edad" min="1" max="150" required>
+                </label>
+                <br><br>
+                <label>
+                    Sexo: <input type="text" id="txtSexo" name="sexo" required>
+                </label>
+                <br><br>
+            </fieldset>
+            <fieldset id = "camposEmpleado" class="fieldsetABM">
+                <label>
+                    CUIL: <input type="text" id="txtCuil" name="cuil">
+                </label>
+                <br><br>
+                <label>
+                    Sueldo: <input type="number" id="txtSueldo" name="sueldo" step=".01">
+                </label>
+                <br><br>
+            </fieldset>
+            <button type="submit" id="alta">Agregar</button>
+            <button type="button" id="modificacion">Modificar</button>
+            <button type="button" id="baja">Eliminar</button>
+            <button type="button" id="cancelar">Cancelar</button>
+        </form>
+
+    </section>
+    <section class="container">       
+        <form id = "controlesTabla">
+            <p>Form Datos</p>
+
+            <label for="filtroPersonas">Filtrar por: </label>
+            <select name = "filtroPersonas" id = "filtroPersonas">
+               <option value = "ninguno" selected>Ninguno</option>
+               <option value = "clientes">Clientes</option>
+               <option value = "empleados">Empleados</option>
+            </select><br>
+
+            <label for="promedioIds">Valor Promedio IDs:</label>
+            <input type="text" id="promedioIds" name="promedioIds"> 
+
+            <input type="button" value="Calcular" id="calcularPromedio"><br>
+
+            <input type="checkbox" id="filtroId" name="filtroId" value="filtroId" checked ="true">
+            <label for="filtroId">ID</label>
+
+            <input type="checkbox" id="filtroApellido" name="filtroApellido" value="filtroApellido" checked ="true">
+            <label for="filtroApellido">Apellido</label>
+
+            <input type="checkbox" id="filtroNombre" name="filtroNombre" value="filtroNombre" checked ="true">
+            <label for="filtroNombre">Nombre</label>
+
+            <input type="checkbox" id="filtroEdad" name="filtroEdad" value="filtroEdad" checked ="true">
+            <label for="filtroEdad">Edad</label>
+
+            <input type="checkbox" id="filtroSexo" name="filtroSexo" value="filtroSexo" checked ="true">
+            <label for="filtroSexo">Sexo</label>
+
+            <input type="checkbox" id="filtroCuil" name="filtroCuil" value="filtroCuil" checked ="true">
+            <label for="filtroCuil">CUIL</label>
+
+            <input type="checkbox" id="filtroSueldo" name="filtroSueldo" value="filtroSueldo" checked ="true">
+            <label for="filtroSueldo">Sueldo</label>
+         </form>  
+    </section>
+    <section class="container">
+        <div id="divTabla"></div>
+    </section>
+</body>
+</html>
