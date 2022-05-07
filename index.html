@@ -298,7 +298,7 @@
         promediarIds.addEventListener('click', function(){  
 
             listaIds = listaPersonas.map(function (persona) {
-                return parseInt(persona.id, 10);
+                return parseInt(persona.dni, 10);
             });
             
             var cantidad = listaIds.length;
@@ -307,7 +307,7 @@
                 return previous + current;
             }, 0);
 
-            document.getElementById('promedioIds').value = total/cantidad;
+            document.getElementById('promedioDnis').value = total/cantidad;
 
         });
 
@@ -1051,8 +1051,8 @@
                <option value = "docentes">Docentes</option>
             </select>
             <br><br>
-            <label for="promedioIds">Valor Promedio IDs:</label>
-            <input type="text" id="promedioIds" name="promedioIds"> 
+            <label for="promedioDnis">Valor Promedio DNIs:</label>
+            <input type="text" id="promedioDnis" name="promedioDnis" disabled = "true"> 
 
             <input type="button" value="Calcular" id="calcularPromedio"><br>
             <br><br>
